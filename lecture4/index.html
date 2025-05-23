@@ -219,10 +219,10 @@ julia&gt; g(2,y=1)
 3
 
 julia&gt; g(2,y=0.1)
-ERROR: TypeError: in keyword argument y, expected Int64, got Float64
+ERROR: TypeError: in keyword argument y, expected Int64, got a value of type Float64
 Stacktrace:
- [1] (::getfield(Main, Symbol(&quot;#kw##g&quot;)))(::NamedTuple{(:y,),Tuple{Float64}}, ::typeof(g), ::Int64) at ./none:0
- [2] top-level scope at REPL[15]:1
+ [1] top-level scope
+   @ REPL[29]:1
 </code></pre>
 <p><code>Int64</code> は 64-bit signed integer type なので，このように小数を代入をしようとするとエラーが起きます．型についての詳細は，<a href="https://docs.julialang.org/en/v1/manual/types/">公式ドキュメント</a> を参照するとよいでしょう．</p>
 <p>また，キーワード引数が二つ以上ある場合，どの順番で指定しても問題ありません．</p>
@@ -248,12 +248,12 @@ julia&gt; a = f(2,3)
 (2, [2, 3], 5)
 
 julia&gt; a[2]
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  3
 
 julia&gt; [3]
-1-element Array{Int64,1}:
+1-element Vector{Int64}:
  3
 
 julia&gt; a ,b = f(2,3)
@@ -263,7 +263,7 @@ julia&gt; a
 2
 
 julia&gt; b
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  3
 </code></pre>
@@ -283,12 +283,12 @@ julia&gt; x.p
 2
 
 julia&gt; x[2]
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  3
 
 julia&gt; x.P
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  3
 
@@ -305,7 +305,7 @@ julia&gt; a
 4
 
 julia&gt; b
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  4
  5
 
@@ -319,14 +319,14 @@ julia&gt; l
 4
 
 julia&gt; m
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  4
  5
 </code></pre>
 <h2 id="_3">配列：参照渡し と 値渡し</h2>
 <p>Juliaでプログラムを書く際，<strong>参照渡し</strong>に注意が必要です．Juliaはmatlabと同様の感覚でプログラムを書けますが，matlabのデフォルトは<strong>値渡し</strong>なのでmatlabに慣れている場合は特に注意が必要です．</p>
 <p>まず，値渡しの例：</p>
-<pre><code>julia&gt; a = 1
+<pre><code class="language-julia">julia&gt; a = 1
 1
 
 julia&gt; b = a
@@ -340,13 +340,13 @@ julia&gt; a
 </code></pre>
 <p>要するに，bの値は変わってもaの値は変わりません．</p>
 <p>次に参照渡しの例：</p>
-<pre><code>julia&gt; a = [1,2]
-2-element Array{Int64,1}:
+<pre><code class="language-julia">julia&gt; a = [1,2]
+2-element Vector{Int64}:
  1
  2
 
 julia&gt; b = a
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  1
  2
 
@@ -354,17 +354,17 @@ julia&gt; b[1]=2
  2
 
 julia&gt; b
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  2
 
 julia&gt; a
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  2
 </code></pre>
 <p>この場合，参照渡しとなりaの値も変更されます．これを避けたければ例えば</p>
-<pre><code>julia&gt; b = a[:]
+<pre><code class="language-julia">julia&gt; b = a[:]
 
 julia&gt; b = copy(a)
 </code></pre>
