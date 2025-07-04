@@ -207,7 +207,7 @@
 <p>例題として，\(d=4\) の場合の次の微分方程式（<strong>Keplerの2体問題</strong>）を考えましょう：
 \begin{equation}
 \frac{\mathrm d}{\mathrm dt} q_1 = p_1, \quad \frac{\mathrm d}{\mathrm dt} q_2 = p_2, \quad
-\frac{\mathrm d}{\mathrm dt} p_1 = -\frac{q_1}{(q_1^2 + q_2)^{3/2}}, \quad \frac{\mathrm d}{\mathrm dt} p_1 = -\frac{q_2}{(q_1^2 + q_2)^{3/2}}.
+\frac{\mathrm d}{\mathrm dt} p_1 = -\frac{q_1}{(q_1^2 + q_2)^{3/2}}, \quad \frac{\mathrm d}{\mathrm dt} p_2 = -\frac{q_2}{(q_1^2 + q_2)^{3/2}}.
 \end{equation}
 これまでの表記との対応は \(y = [q_1,q_2,p_1,p_2]^\top\) です．
 よく知られているように，\(q=(q_1,q_2)\) は，一体を原点に固定したときのもう一体の位置ベクトルを，\(p = (p_1,p_2)\) は速度ベクトルを表します．
@@ -236,15 +236,15 @@ Kepler問題を
 と表すことにすると，symplectic Euler法の更新式は次のようになります：
 \begin{align}
     q_{n+1} &amp;= q_{n} + h p_{n}, \cr
-    p_{n+1} &amp;= p_{n} - h g(q_{n+1}).
+    p_{n+1} &amp;= p_{n} + h g(q_{n+1}).
 \end{align}
 Symplectic Euler法は1次精度の解法です．</p>
 <h4 id="stormer-verlet"><strong>Störmer-Verlet法</strong></h4>
 <p>Symplectic Euler法を2次精度に拡張したStörmer-Verlet法の更新式は次のようになります：
 \begin{align}
     q_{n+1/2} &amp;= q_{n} + \frac{h}{2} p_{n}, \cr
-    p_{n+1} &amp;= p_{n} - h g(q_{n+1/2}), \cr
-    q_{n+1} &amp;= q_{n+1/2} + \frac{h}{2} p_{n+1/2}.
+    p_{n+1} &amp;= p_{n} + h g(q_{n+1/2}), \cr
+    q_{n+1} &amp;= q_{n+1/2} + \frac{h}{2} p_{n+1}.
 \end{align}
 Störmer-Verlet法は2次精度の解法です．</p>
 <p>Störmer-Verlet法は，天文学の文脈で，1907年にStörmerにより提案された解法です．
