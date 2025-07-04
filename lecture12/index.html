@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Gram&ndash;Schmidt - 実験数学1</title>
+    <title>常微分方程式3 - 実験数学1</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -116,8 +116,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">Gram&ndash;Schmidt</a>
+<li >
+    <a href="../lecture6/">Gram&ndash;Schmidt</a>
 </li>
 
                         
@@ -146,8 +146,8 @@
 
                         
                             
-<li >
-    <a href="../lecture12/">常微分方程式3</a>
+<li class="active">
+    <a href="./">常微分方程式3</a>
 </li>
 
                         
@@ -170,12 +170,12 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../lecture4/">
+                        <a rel="prev" href="../lecture10/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="next" href="../lecture7/">
+                        <a rel="next" href="../lecture11/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -189,41 +189,97 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#gramschmidt">Gram&ndash;Schmidt の正規直交化法</a></li>
+        <li class="first-level active"><a href="#2">常微分方程式の数値解法 2</a></li>
+            <li class="second-level"><a href="#symplectic-euler">Symplectic Euler法</a></li>
+                
+            <li class="second-level"><a href="#stormer-verlet">Störmer-Verlet法</a></li>
+                
+            <li class="second-level"><a href="#_1">陰的な解法</a></li>
+                
+            <li class="second-level"><a href="#_2">今日の課題</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="gramschmidt">Gram&ndash;Schmidt の正規直交化法</h1>
-<p>一年生の線形代数で学習した<strong>Gram&ndash;Schmidt (GS) の正規直交化法</strong>のプログララムを書いていきましょう．</p>
-<p>GS の正規直交化法とは，内積の定義されたベクトル空間 \(V\) において，ベクトルの集合 \( \{a_1,a_2,\dots,a_n \} \) が与えられたとき，これらの貼る部分空間の正規直交基底を具体的に構成する手続きです．この講義では，簡単のため \(V =\mathbb{R}^m \) とし，その内積は \(a,b\in\mathbb{R}^m \) に対して \( (a,b) := a^\top b\) であるとします（\(a^\top\) は \(a\) の転置を表します：\({}^t a\) と同じ意味です）．基本的なアルゴリズムは次の通りです（プログラムを書くことを意識し，\(=\) は右辺で左辺の変数を定義する（あるいは再定義する）という意味です）</p>
-<p>&nbsp; &nbsp; \( q_1 = a_1\) <br></p>
-<p>&nbsp; &nbsp; \(\displaystyle q_1 = \frac{q_1}{\|q_1\|}\) <br></p>
-<p>&nbsp; &nbsp; \( q_2= a_2 - (q_1,a_2)q_1\) <br></p>
-<p>&nbsp; &nbsp; \(\displaystyle q_2= \frac{q_2}{\|q_2\|}\) <br></p>
-<p>&nbsp; &nbsp; \( q_3= a_3 - (q_1,a_3)q_1 - (q_2,a_3)q_2\) <br></p>
-<p>&nbsp; &nbsp; \(\displaystyle q_3= \frac{q_3}{\|q_3\|}\) <br></p>
-<p>&nbsp; &nbsp; \(\vdots\) <br></p>
-<p>&nbsp; &nbsp; \( \displaystyle q_n= a_n - \sum_{j=1}^{n-1} (q_j,a_n)q_j \) <br></p>
-<p>&nbsp; &nbsp; \(\displaystyle q_n = \frac{q_n}{\|q_n\|}\)</p>
-<p>以上を擬似コード的に書けば次のようになるでしょう．</p>
-<pre><code class="language-bash">for i = 1:n
-    q_i = a_i
-    for j = 1:i-1
-        q_i -= (q_j,a_i) * q_j
-    end
-    q_i = q_i / norm(q_i)
-end
-</code></pre>
-<p>あとは，Julia の文法に沿って，ベクトルの集合を入力として受け取り，ベクトルの集合を出力する関数を定義すればよいわけです．しかし，ここでいくつか注意すべきことがあります．</p>
-<p>まず，内積やノルムはどうすればよいのでしょうか？実は，<a href="https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/"><strong>LinearAlgebra</strong></a>というパッケージには，内積やノルムを計算する関数が既に用意されています．内積は <code>dot</code> で計算でき，ノルムは <code>norm</code> で計算できます．<a href="https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.norm">ノルムの項</a>を読むと分かるように，ユークリッドノルム以外のノルムにも対応しています．</p>
-<p>ではこれで準備万端かというと，実はまだ考えなければならないことがあります．入力したベクトルの列が線形従属だとすると何が起きるでしょうか？そのような場合，どこかの <code>i</code> で <code>q_i</code> が零ベクトルとなってしまい，このときノルムは \(0\) ですから <strong>零割り</strong> が発生してしまいます．このような場合の対応策はいくつか考えられますが（GS の正規直交化法を使って「何をしたいのか」に強く依存します），少なくとも 「<code>q_i</code> が零ベクトルかどうかの判定」は必要そうです．どのように判定すればよいでしょうか？ベクトルの全ての成分が零かどうかを判定してもよいですが，（零ベクトルでなければ）その後すぐに正規化することを考えると，<code>norm(q_i)</code> が 0 かどうか判定すればよさそうです．では，<code>if norm(q_i) == 0</code> のような条件分岐を書けばよいのでしょうか？実は，このような条件分岐は「数学としては正しい」ですが，コンピュータで計算する際には丸め誤差が避けられないことを踏まえると（数学的には 0 でも，実際の計算では丸め誤差分のズレが生じます），倍精度で計算する場合には例えば <code>tol = 1e-10</code> のように閾値を設定して，<code>if norm(q_i) &lt; tol</code> のように条件分岐を書けばよいということになります（<code>1e-10</code> は \( 10^{-10}\) のことです ）．</p>
+<h1 id="2">常微分方程式の数値解法 2</h1>
+<p>今回の講義も常微分方程式の数値解法のベクトル編です．</p>
+<p>例題として，\(d=4\) の場合の次の微分方程式（<strong>Keplerの2体問題</strong>）を考えましょう：
+\begin{equation}
+\frac{\mathrm d}{\mathrm dt} q_1 = p_1, \quad \frac{\mathrm d}{\mathrm dt} q_2 = p_2, \quad
+\frac{\mathrm d}{\mathrm dt} p_1 = -\frac{q_1}{(q_1^2 + q_2)^{3/2}}, \quad \frac{\mathrm d}{\mathrm dt} p_1 = -\frac{q_2}{(q_1^2 + q_2)^{3/2}}.
+\end{equation}
+これまでの表記との対応は \(y = [q_1,q_2,p_1,p_2]^\top\) です．
+よく知られているように，\(q=(q_1,q_2)\) は，一体を原点に固定したときのもう一体の位置ベクトルを，\(p = (p_1,p_2)\) は速度ベクトルを表します．
+また，
+\begin{equation}
+H(q,p) = \frac{p_1^2+p_2^2}{2} - \frac{1}{\sqrt{q_1^2+q_2^2}}
+\end{equation}
+とおくと，これは保存量になります（エネルギーやハミルトニアンと呼ばれます）．
+すなわち，微分方程式の解に沿って
+\begin{equation}
+\frac{\mathrm d}{\mathrm dt} H(q(t),p(t)) = 0
+\end{equation}
+が成り立ちます．
+また，
+\begin{equation}
+L(q,p) = q_1 p_2 - q_2p_1 
+\end{equation}
+という保存量も持ちます．この量は角運動量と呼ばれ，これが保存量であることは，Keplerの第2法則に他なりません．</p>
+<p>今回の講義では，Kepler方程式をいくつかの解法で数値計算した様子を比較してみます．</p>
+<h4 id="symplectic-euler"><strong>Symplectic Euler法</strong></h4>
+<p>前回の講義で学んだsymplectic Euler法は次のようになります．
+Kepler問題を
+\begin{equation}
+\frac{\mathrm d}{\mathrm dt} = p, \quad \frac{\mathrm d}{\mathrm dt}p = g(q)
+\end{equation}
+と表すことにすると，symplectic Euler法の更新式は次のようになります：
+\begin{align}
+    q_{n+1} &amp;= q_{n} + h p_{n}, \cr
+    p_{n+1} &amp;= p_{n} - h g(q_{n+1}).
+\end{align}
+Symplectic Euler法は1次精度の解法です．</p>
+<h4 id="stormer-verlet"><strong>Störmer-Verlet法</strong></h4>
+<p>Symplectic Euler法を2次精度に拡張したStörmer-Verlet法の更新式は次のようになります：
+\begin{align}
+    q_{n+1/2} &amp;= q_{n} + \frac{h}{2} p_{n}, \cr
+    p_{n+1} &amp;= p_{n} - h g(q_{n+1/2}), \cr
+    q_{n+1} &amp;= q_{n+1/2} + \frac{h}{2} p_{n+1/2}.
+\end{align}
+Störmer-Verlet法は2次精度の解法です．</p>
+<p>Störmer-Verlet法は，天文学の文脈で，1907年にStörmerにより提案された解法です．
+今日に至るまで，天文学の文脈で広く利用されています（より正確に言えば，Störmer-Verlet法を高精度に拡張した解法がよく利用されています）．
+一方で，分子動力学計算の文脈で，1967年にVerletが（Störmerとは独立に）本質的に同じ解法を提案したという経緯があります．
+そのため，分野によっては，Störmer法といったりVerlet法といったりすることもあります．</p>
+<p>なお，この解法を歴史上はじめて用いたのはStörmerではありません．
+さらに200年以上遡り，NewtonがPrincipiaの中で，ケプラーの第2法則を幾何的に理解するために用いたのが初出です．
+そのため，数値解析学者の中には，Newton-Störmer-Verlet法と呼ぶ人もいます．</p>
+<h4 id="_1"><strong>陰的な解法</strong></h4>
+<p>今日の講義では，陰的な解法も扱います．
+ここでは簡単のため，二つの解法をプログラミングしてみます．</p>
+<ul>
+<li><strong>陰的Euler法</strong> <br>
+  \begin{equation}
+    y_{n+1} = y_n + h f(y_{n+1})
+  \end{equation}</li>
+<li><strong>陰的中点則</strong> <br>
+  \begin{equation}
+    y_{n+1} = y_n + h f\Big(\frac{y_{n+1}+y_n}{2}\Big)
+  \end{equation}</li>
+</ul>
+<p>どちらも，時間発展を計算するためには，連立<strong>非線形</strong>方程式を解く必要があります．
+実用上は，不動点反復法・簡易Newton法・Newton法などがよく利用されますが，ここでは，パッケージの利用の練習も兼ねて，NLsolveパッケージを利用して数値計算することにします．</p>
+<h3 id="_2">今日の課題</h3>
+<p>今日の課題は，Störmer-Verlet法と陰的中点則のプログラムを完成させることです．
+それぞれ，Symplectic Euler法と陰的Euler法のプログラミングが参考になります．
+これらを完成させたうえで，数値解に対して，エネルギーと角運動量の振る舞いを観察していきます．</p>
 <div class="bs-callout bs-callout-primary">
   <h4>課題</h4>
-    サンプルファイルをダウンロードし，「ここを書く」の部分を埋めて，GSの正規直交化の関数を完成させましょう．また，これができれば，正規直交化が実現できていることを確認するにはどうすればよいか考えてみてください．<br>
-      CLEで提出する際は，「ここを書く」の部分のコピーをテキストとしてペーストして提出してください．また，（期待通りの出力が得られた/困っていることがある，など）簡単な考察を書いてください．
+    サンプルプログラムの中のStörmer-Verlet法と陰的中点則の関数を完成させ，CLEで提出してください．
+    CLEで提出する際は，notebookのpdfを添付し，解法の特徴について考察してください．
 </div>
-<p>サンプルファイルは<a href="https://github.com/yutomiyatake/ExpMath1-programs/blob/db7867e6c324d73df830dae92eb4323d5d9c7a27/julia/GramSchmidt.ipynb">こちら</a></p></div>
+
+<p>サンプルファイルは<a href="https://github.com/yutomiyatake/ExpMath1-programs/blob/03335ce8b48139c976e8f626b9498dbb67a0174f/julia/ODE3.ipynb">こちら</a></p></div>
         
         
     </div>
